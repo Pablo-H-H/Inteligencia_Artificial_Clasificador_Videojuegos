@@ -1,0 +1,2 @@
+# Inteligencia_Artificial_Clasificador_Videojuegos
+Clasificador de 21 Videojuegos usando CNN
