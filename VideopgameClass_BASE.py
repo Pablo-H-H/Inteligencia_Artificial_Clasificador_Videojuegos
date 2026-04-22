@@ -79,15 +79,12 @@ mixed_precision.set_global_policy(policy)
 model = models.Sequential()
 
 # Capas intermedias (usarán float16 automáticamente)
-# Bloque 1: Detecta bordes y colores básicos
 model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(300, 300, 3)))
 model.add(layers.MaxPooling2D((2, 2)))
 
-# Bloque 2: Detecta formas más complejas (armas, personajes)
 model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
 
-# Bloque 3: Detecta patrones abstractos de géneros
 model.add(layers.Conv2D(128, (3, 3), activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
 
