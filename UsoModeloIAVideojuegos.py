@@ -9,10 +9,10 @@ import seaborn as sns
 # ------------------------------------------------------------
 # Configuración de rutas y parámetros
 # ------------------------------------------------------------
-base_dir = 'videogames-cnn-prueba'
+base_dir = 'videogames-cnn-dataset_V3'
 test_dir = os.path.join(base_dir, 'test')
 
-checkpoint_path_best = "/checkpoints_Base/checkpoint.weights.h5"
+checkpoint_path_best = "./checkpoints_Base/checkpoint.weights.h5"
 
 batch_size = 32
 target_size = (300, 300)

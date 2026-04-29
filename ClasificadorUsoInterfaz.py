@@ -24,7 +24,7 @@ BASE_DIR = 'videogames-cnn-prueba'
 TEST_DIR = os.path.join(BASE_DIR, 'test')
 
 # *** CAMBIO 1: Ruta del nuevo modelo (SavedModel o .h5) ***
-MODEL_PATH = 'inception_med_classifier_final'   # carpeta del SavedModel
+MODEL_PATH = 'best_phase2.h5'   # carpeta del SavedModel
 # Si guardaste como .h5 usa: 'best_phase2.h5'
 
 # *** CAMBIO 2: Tamaño requerido por InceptionResNetV2 ***

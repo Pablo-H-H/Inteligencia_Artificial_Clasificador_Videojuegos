@@ -11,7 +11,7 @@ import os
 TEST_DIR = 'videogames-cnn-dataset_V3/test'   # Ruta a la carpeta de test
 IMG_SIZE = (299, 299)                         # Tamaño requerido por InceptionResNetV2
 BATCH_SIZE = 32                               # Ajusta según tu memoria
-MODEL_PATH = 'inception_med_classifier_final' # Directorio del modelo guardado (SavedModel)
+MODEL_PATH = 'best_phase2.h5' # Directorio del modelo guardado (SavedModel)
 # Si guardaste como .h5, cambia a: 'best_phase2.h5'
 
 # --------------------- CARGA DEL MODELO ---------------------

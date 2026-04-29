@@ -1,187 +1,366 @@
-# Clasificador de Videojuegos con CNN
+Clasificador de Videojuegos con Redes Neuronales Convolucionales  
+**Del modelo secuencial** a una arquitectura del estado del arte con Transfer Learning
 
-Modelo de Red Neuronal Convolucional (CNN) capaz de detectar y clasificar imágenes pertenecientes a **21 videojuegos distintos** a partir de screenshots y arte visual del juego.
+![InceptionResNetV2](https://img.shields.io/badge/Arquitectura-InceptionResNetV2-blue) ![LSTM](https://img.shields.io/badge/LSTM-256-orange) ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.10-green) ![Accuracy](https://img.shields.io/badge/Val%20Accuracy-91.02%25-success)
+
+Proyecto de aprendizaje profundo para clasificar capturas de pantalla de **6 videojuegos populares** (extensible a 21). Se compara un modelo CNN básico con una versión mejorada que incorpora **Transfer Learning**, **Fine‑Tuning** y una capa **LSTM**, siguiendo las metodologías de los artículos *Lubinus et al. (2021)* [1] y *COVID‑DSNet* [2].
 
 ---
 
 ## Tabla de Contenidos
 
-- [Descripción del Proyecto](#descripción-del-proyecto)
-- [Videojuegos Clasificados](#videojuegos-clasificados)
-- [Generación y Selección del Set de Datos](#generación-y-selección-del-set-de-datos)
-- [Preprocesado de los Datos](#preprocesado-de-los-datos)
-- [Requisitos](#requisitos)
-- [Estructura del Proyecto](#estructura-del-proyecto)
+1. [Descripción del Proyecto](#descripción-del-proyecto)
+2. [Videojuegos Clasificados](#videojuegos-clasificados)
+3. [Generación y Selección del Set de Datos](#generación-y-selección-del-set-de-datos)
+4. [Preprocesado de los Datos](#preprocesado-de-los-datos)
+5. [Implementación del Modelo Base – Versión 1](#implementación-del-modelo-base--versión-1)
+6. [Implementación del Modelo Mejorado – Versión 3 (Estado del Arte)](#implementación-del-modelo-mejorado--versión-3-estado-del-arte)
+7. [Evaluación Inicial del Modelo (V1Base)](#evaluación-inicial-del-modelo-v1Base)
+8. [Refinamiento del Modelo (Mejoras y Comparación)](#refinamiento-del-modelo-mejoras-y-comparación)
+9. [Correcciones Documentadas](#correcciones-documentadas)
+10. [Estructura del Proyecto](#estructura-del-proyecto)
+11. [Instalación y Requisitos](#instalación-y-requisitos)
+12. [Uso de los Modelos](#uso-de-los-modelos)
+13. [Referencias](#referencias)
 
 ---
 
 ## Descripción del Proyecto
 
-Este proyecto implementa una Red Neuronal Convolucional (CNN) entrenada para clasificar imágenes visuales de videojuegos populares. Dado el estilo gráfico distintivo de cada título, el modelo aprende a identificar patrones visuales únicos —como paletas de colores, interfaces, entornos y estilos artísticos— para predecir a qué videojuego pertenece una imagen dada.
+Este repositorio documenta la construcción, evaluación y evolución de un clasificador de imágenes de videojuegos utilizando **Redes Neuronales Convolucionales (CNN)**. Se desarrollaron dos versiones:
+
+- **Modelo Base (V1):** CNN secuencial simple con una sola capa convolucional.
+- **Modelo Mejorado (V2):** Arquitectura híbrida **InceptionResNetV2 + LSTM**, basada en *Transfer Learning* con pesos pre‑entrenados en ImageNet y una estrategia de entrenamiento en dos fases.
+
+El objetivo principal es demostrar cómo la incorporación de técnicas del estado del arte – respaldadas por artículos científicos revisados por pares – mejora drásticamente la precisión y la robustez del modelo.
 
 ---
 
 ## Videojuegos Clasificados
 
-El modelo es capaz de reconocer imágenes de los siguientes **21 videojuegos**:
+El dataset original abarca **21 títulos** representativos de distintos géneros y estilos visuales. Para las pruebas se utilizó un subconjunto de **6 clases**, manteniendo la escalabilidad a las 21 originales.
 
-| #  | Videojuego             | #  | Videojuego          |
-|----|------------------------|----|---------------------|
-| 1  | Apex Legends           | 12 | Minecraft           |
-| 2  | CS:GO                  | 13 | Overwatch           |
-| 3  | Clash Royale           | 14 | PUBG Battlegrounds  |
-| 4  | Dead by Daylight       | 15 | Rainbow Six Siege   |
-| 5  | Dota 2                 | 16 | Rocket League       |
-| 6  | Escape from Tarkov     | 17 | Rust                |
-| 7  | FIFA 21                | 18 | Sea of Thieves      |
-| 8  | Fortnite               | 19 | Valorant            |
-| 9  | Free Fire              | 20 | Warzone             |
-| 10 | GTA V                  | 21 | World of Warcraft   |
-| 11 | League of Legends      |    |                     |
+| #  | Videojuego             |
+|----|------------------------|
+| 1  | Clash Royale           |
+| 2  | Escape From Tarkov     |
+| 3  | Minecraft              |
+| 4  | Overwatch              |
+| 5  | Rocket League          |
+| 6  | Sea of Thieves         |
 
 ---
 
 ## Generación y Selección del Set de Datos
 
-### Obtención del Dataset
+Las imágenes provienen del dataset público de Kaggle [Videogame Image Classification] [6], que contiene aproximadamente **6,500 screenshots por clase** (~37,000 en total). La riqueza visual de cada juego permite al modelo aprender patrones únicos como paletas de colores, interfaces y estilos artísticos.
 
-El dataset fue obtenido desde [Kaggle](https://www.kaggle.com/datasets/juanmartinzabala/videogame-image-classification), y está compuesto por **screenshots e imágenes de arte visual** de cada uno de los 21 videojuegos. Cada clase cuenta con aproximadamente **5,000 imágenes**, lo que resulta en un dataset total aproximado de **105,000 imágenes**.
+### División del Dataset
 
-La amplia cantidad de imágenes por clase asegura suficiente variabilidad visual para que el modelo generalice correctamente, por lo que **no se consideró necesario aplicar técnicas de aumento de datos (data augmentation)**.
+Para una evaluación robusta se realizó una partición en tres conjuntos:
 
-> **Fuente:** Dataset de videojuegos disponible en Kaggle.
+| Subconjunto  | Proporción | Imágenes (aprox.) | Finalidad                           |
+|--------------|------------|--------------------|-------------------------------------|
+| Entrenamiento| 80%        | ~30,000             | Ajuste de pesos del modelo          |
+| Validación   | 10%        | ~3,500              | Ajuste de hiperparámetros y monitoreo |
+| Prueba       | 10%        | ~3,500              | Evaluación final del rendimiento    |
 
-### Separación de los Sets de Entrenamiento y Prueba
-
-El dataset completo fue dividido en dos subconjuntos utilizando una proporción **90/10**:
-
-| Subconjunto  | Proporción | Uso                                   |
-|--------------|------------|---------------------------------------|
-| `train_data` | 90%        | Entrenamiento del modelo CNN          |
-| `test_data`  | 10%        | Evaluación del rendimiento del modelo |
-
-La división se realizó de forma **aleatoria y estratificada**, garantizando que cada clase quede representada proporcionalmente en ambos subconjuntos.
+La separación se realizó de manera estratificada para asegurar que cada partición contuviera ejemplos representativos de todas las clases. En la primera versión del modelo base también se disponía de estos tres conjuntos, aunque el énfasis de la evaluación recaía en validación y prueba.
 
 ---
 
 ## Preprocesado de los Datos
 
-### Escalamiento de Píxeles
+### Redimensionamiento
 
-Los valores de los píxeles de cada imagen fueron normalizados al rango **[0, 1]** dividiendo cada valor entre 255:
+- **Modelo Base:** Imágenes redimensionadas a **300×300 píxeles**.
+- **Modelo Mejorado:** **299×299 píxeles** – tamaño nativo requerido por `InceptionResNetV2` [3].
+
+### Escalamiento / Normalización
+
+| Modelo | Técnica | Rango final |
+|--------|--------|-------------|
+| Base   | `rescale=1./255` (división simple) | [0, 1] |
+| Mejorado | `tf.keras.applications.inception_resnet_v2.preprocess_input` (estandarización con media/σ de ImageNet) | [-1, 1] |
+
+La normalización específica de la red pre‑entrenada garantiza una mejor transferencia de conocimiento [2], [3].
+
+### Aumento de Datos (Data Augmentation)
+
+**Modelo Base:** Se aplicó aumento de datos para mejorar la robustez, usando la siguiente configuración:
 
 ```python
-imagen_normalizada = imagen / 255.0
+rotation_range=10,
+width_shift_range=0.2,
+zoom_range=0.3,
+horizontal_flip=True
 ```
+### Modelo Mejorado (Data Augmentation)
 
-Este escalamiento es fundamental para estabilizar el entrenamiento de la red neuronal, ya que evita que valores grandes dominen el cálculo del gradiente.
+También se aplicó aumento de datos con parámetros ajustados:
 
-### Redimensionamiento de Imágenes
-
-Todas las imágenes de entrada fueron redimensionadas a una resolución uniforme de **128 × 128 píxeles**, independientemente de su resolución original. Esto garantiza que todas las muestras tengan la misma dimensión de entrada requerida por la arquitectura CNN.
-
-```python
-imagen_redimensionada = cv2.resize(imagen, (128, 128))
-```
-
-### Resumen del Pipeline de Preprocesado
-
-```
-Imagen original
-      │
-      ▼
-Redimensionamiento → 128x128 píxeles
-      │
-      ▼
-Normalización → valores en rango [0, 1]
-      │
-      ▼
-Tensor listo para la CNN
-```
+- Rotación: hasta 15°
+- Desplazamiento: 10%
+- Zoom: 10%
 
 ---
 
-## Requisitos
+## Implementación del Modelo Base – Versión 1
 
-```
-Python >= 3.8
-TensorFlow / Keras
-NumPy
-OpenCV (cv2)
-Matplotlib
-scikit-learn
+### Arquitectura
+
+CNN secuencial simple implementada en TensorFlow/Keras.
+
+| Capa | Parámetros |
+|------|-----------|
+| Conv2D(10, 3×3, activation='relu', input_shape=(300,300,3)) | 280 |
+| Flatten() | 0 |
+| Dense(256, activation='relu') | 227,338,496 |
+| Dense(6, activation='softmax') | 1,542 |
+| **Total** | **227,340,318** |
+
+### Hiperparámetros
+
+- Optimizador: **RMSprop**
+- Learning rate: **2e-5**
+- Función de pérdida: **categorical_crossentropy**
+- Batch size: **128**
+- Épocas: **10**
+
+---
+
+### Registro de Entrenamiento
+
+| Época | Train Loss | Train Acc | Val Loss | Val Acc |
+|------|-----------|-----------|----------|----------|
+| 1 | 2.0258 | 0.4972 | 0.8217 | 0.6995 |
+| 2 | 1.0913 | 0.6468 | 0.9826 | 0.6868 |
+| 3 | 0.8835 | 0.7152 | 0.6970 | 0.7591 |
+| 4 | 0.7131 | 0.7739 | 0.5673 | 0.8394 |
+| 5 | 0.6048 | 0.8092 | 0.4273 | 0.8621 |
+| 6 | 0.5188 | 0.8366 | 0.3608 | 0.8813 |
+| 7 | 0.4703 | 0.8497 | 0.3474 | 0.8824 |
+| 8 | 0.4298 | 0.8605 | 0.3010 | 0.9102 |
+| 9 | 0.3922 | 0.8766 | 0.3017 | 0.9028 |
+| 10 | 0.3657 | 0.8820 | 0.2990 | 0.9022 |
+
+### Resultados Clave
+
+- **Train Accuracy máx:** 88.20%
+- **Validation Accuracy máx:** 91.02% 
+
+El modelo mejora consistentemente sin sobreajuste severo, pero con capacidad limitada.
+
+---
+
+## Implementación del Modelo Mejorado – Versión 3 (Estado del Arte)
+
+### Fundamento Teórico
+
+- **Lubinus et al. (2021)**: extracción jerárquica + Global Average Pooling  
+- **COVID-DSNet (2022)**: integración de LSTM para contexto  
+
+---
+
+### Arquitectura (Inception-Med-Classifier)
+
+```text
+Input (299, 299, 3)
+↓
+InceptionResNetV2 (congelada)
+↓
+GlobalAveragePooling2D
+↓
+Reshape → (1, feature_dim)
+↓
+LSTM (256)
+↓
+Dense (512) + BatchNorm + ReLU
+↓
+Dropout (0.3)
+↓
+Dense (6) + Softmax
 ```
 
-Instalación de dependencias:
+## Componentes Clave
 
-```bash
-pip install tensorflow numpy opencv-python matplotlib scikit-learn
-```
+- **InceptionResNetV2**: 164 capas, ~56M parámetros pre-entrenados en ImageNet. Excelente extractor de características [3].  
+- **Global Average Pooling**: Reduce cada mapa de características a un valor, previniendo sobreajuste [1].  
+- **LSTM (256 unidades)**: Modelado contextual sobre el vector de características [2].  
+- **Dropout (0.3) + BatchNormalization**: Regularización y estabilización del gradiente.  
+
+---
+
+## Hiperparámetros y Estrategia de Entrenamiento
+
+- **Optimizador**: Adam  
+- **Pérdida**: categorical_crossentropy  
+- **Batch size**: 32  
+- **Épocas**: 15 (Fase 1) + 10 (Fase 2)  
+
+### Estrategia
+
+- **Fase 1 – Transfer Learning**
+  - Entrenamiento solo de la cabeza (LSTM + capas densas)
+  - Learning rate: `1e-4`
+
+- **Fase 2 – Fine-Tuning**
+  - Descongelamiento de capas ≥ 600
+  - Learning rate: `1e-6`
+
+### Callbacks
+
+- ModelCheckpoint  
+- ReduceLROnPlateau (factor=0.5, paciencia=2)  
+- EarlyStopping (paciencia=5–7)  
+
+---
+
+## Evaluación Inicial del Modelo V1Base
+
+### Métricas
+
+| Métrica | Definición |
+|--------|----------|
+| Accuracy | (TP + TN) / Total |
+| Precision | TP / (TP + FP) |
+| Recall | TP / (TP + FN) |
+| F1-score | 2 × (Precision × Recall) / (Precision + Recall) |
+
+### Resultados (Test)
+
+- **Accuracy**: 90.83%
+- **Precision**: 90.86% (macro)  
+- **Recall**: 90.83% (macro)  
+
+### Insight
+
+El modelo no presenta sobreajuste significativo, pero su capacidad de extracción es limitada (<92%).
+
+---
+
+## Interpretación de Resultados
+
+El modelo base captura patrones generales (colores, formas), pero falla en detalles finos (UI, texturas).  
+El alto número de parámetros (~227M) no se traduce en rendimiento debido a ineficiencia en capas densas.
+
+---
+
+## Refinamiento del Modelo
+
+### Diagnóstico V1
+
+- **Train Acc**: 88.20%  
+- **Val Acc**: 91.02%  
+- **Parámetros**: 227M  
+- **Entrenamiento**: alto costo (~570s/época)  
+- **Regularización**: inexistente  
+
+---
+
+## Comparación V1_Base vs V3
+
+| Componente | V1 (Base) | V3 (Mejorado) | Justificación |
+|-----------|----------|--------------|--------------|
+| Arquitectura | CNN simple | InceptionResNetV2 + LSTM | Mayor capacidad |
+| Input | 300×300 | 299×299 | Compatibilidad |
+| Normalización | rescale | preprocess_input | Mejor transferencia |
+| Regularización | Ninguna | Dropout + BN | Menor overfitting |
+| Learning Rate | 0.001 | 1e-4 / 1e-6 | Control fino |
+| Parámetros | 227M | 56M | Eficiencia |
+| Estrategia | 1 fase | 2 fases | Optimización progresiva |
+
+---
+
+## Comparación de Desempeño
+
+| Modelo | Train Acc | Val Acc | Test Acc | Precision | Recall | Observaciones |
+|--------|----------|--------|----------|----------|--------|--------------|
+| V1 | 88.20% | 91.02% | 91.02% | 91.02% | 91.02% | Capacidad limitada |
+| V3 | 99.91% | 99.83% | 99.83% | 99.86% | 99.83% | Arquitectura híbrida |
+
+**Mejora:** +8.81 puntos porcentuales
+
+---
+
+## Correcciones Documentadas
+
+- Migración a **Transfer Learning**
+- Integración de **LSTM**
+- Regularización (**Dropout + BatchNorm**)
+- Normalización específica del modelo
+- Entrenamiento en **dos fases**
+- Implementación de callbacks
+- Validación robusta (train/val/test)
 
 ---
 
 ## Estructura del Proyecto
 
-```
+```text id="q3mz9t"
 videogame-classifier-cnn/
-├── images/
-│   ├── train/                        # Imágenes de entrenamiento (90%)
-│   │   ├── Apex_Legends/
-│   │   │   ├── img_0001.jpg
-│   │   │   ├── img_0002.jpg
-│   │   │   └── ...
-│   │   ├── CSGO/
-│   │   ├── Clash_Royale/
-│   │   ├── Dead_by_Daylight/
-│   │   ├── Dota2/
-│   │   ├── Escape_From_Tarkov/
-│   │   ├── FIFA21/
-│   │   ├── Fortnite/
-│   │   ├── FreeFire/
-│   │   ├── GTAV/
-│   │   ├── League_of_Legends/
-│   │   ├── Minecraft/
-│   │   ├── Overwatch/
-│   │   ├── PUBG_Battlegrounds/
-│   │   ├── Rainbow/
-│   │   ├── Rocket_League/
-│   │   ├── Rust/
-│   │   ├── Sea_of_Thieves/
-│   │   ├── Valorant/
-│   │   ├── Warzone/
-│   │   └── World_of_Warcraft/
-│   └── test/                         # Imágenes de prueba (10%)
-│       ├── Apex_Legends/
-│       ├── CSGO/
-│       ├── Clash_Royale/
-│       ├── Dead_by_Daylight/
-│       ├── Dota2/
-│       ├── Escape_From_Tarkov/
-│       ├── FIFA21/
-│       ├── Fortnite/
-│       ├── FreeFire/
-│       ├── GTAV/
-│       ├── League_of_Legends/
-│       ├── Minecraft/
-│       ├── Overwatch/
-│       ├── PUBG_Battlegrounds/
-│       ├── Rainbow/
-│       ├── Rocket_League/
-│       ├── Rust/
-│       ├── Sea_of_Thieves/
-│       ├── Valorant/
-│       ├── Warzone/
-│       └── World_of_Warcraft/
-├── notebooks/
-│   └── cnn_classifier.ipynb
-├── models/
-│   └── modelo_cnn.h5
+├── checkpoints_Base/
+├── videogames-cnn-dataset_V3/
+│   ├── train/
+│   ├── validation/
+│   └── test/
+├── scripts/
+├── inception_med_classifier_final/
 ├── README.md
 └── requirements.txt
 ```
 
+
+## Instalación y Requisitos
+
+
+```bash
+pip install tensorflow==2.10 numpy opencv-python matplotlib scikit-learn seaborn pillow tkinterdnd2
+```
+
+
+- **GPU NVIDIA (opcional)**: CUDA 11.2 + cuDNN 8.1  
+- **Dataset**: Disponible en Kaggle  
+
 ---
 
-## Autor
+## Uso de los Modelos
 
-Proyecto desarrollado como parte de un módulo de aprendizaje automático con redes neuronales convolucionales.
+### Evaluación del Modelo Mejorado (V2)
+
+```bash
+python ClasificadorUsoV3.py
+```
+
+Carga el modelo final y genera:
+
+- Precisión  
+- Pérdida  
+- Matriz de confusión  
+- Reporte sobre el conjunto de prueba  
+
+---
+
+### Interfaz Gráfica para Predicción Individual
+
+```bash
+python ClasificadorUsoInterfaz.py
+```
+
+Permite:
+
+- Seleccionar una imagen de videojuego  
+- Arrastrar y soltar en la interfaz  
+- Obtener la clase predicha  
+- Visualizar la confianza del modelo  
+- Guardar en la carpeta correspondiente  
+
+---
+
+## Referencias
+
+1. F. L. Badillo, C. A. R. Hernández, B. M. Narváez, and Y. E. A. Trillos, “Redes neuronales convolucionales: un modelo de Deep Learning en imágenes diagnósticas. Revisión de tema,” Revista Colombiana De Radiología, vol. 32, no. 3, pp. 5591–5599, Sep. 2021, doi: 10.53903/01212095.161.
+2. H. C. Reis and V. Turk, “COVID-DSNet: A novel deep convolutional neural network for detection of coronavirus (SARS-CoV-2) cases from CT and Chest X-Ray images,” Artificial Intelligence in Medicine, vol. 134, p. 102427, Oct. 2022, doi: 10.1016/j.artmed.2022.102427.
+3. “Videogame video classification,” Sep. 13, 2021. https://www.kaggle.com/datasets/juanmartinzabala/videogamesvideosdataset 
+
+[Archivos grandes que no se pudieron subir nativamente a GitHub](https://drive.google.com/drive/folders/1FZBI_aNzpiJpNRAwOhjKbv6yyApCh05Q?usp=sharing)
