@@ -1,7 +1,7 @@
 Clasificador de Videojuegos con Redes Neuronales Convolucionales  
 **Del modelo secuencial** a una arquitectura del estado del arte con Transfer Learning
 
-![InceptionResNetV2](https://img.shields.io/badge/Arquitectura-InceptionResNetV2-blue) ![LSTM](https://img.shields.io/badge/LSTM-256-orange) ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.10-green) ![Accuracy](https://img.shields.io/badge/Val%20Accuracy-91.02%25-success)
+![InceptionResNetV2](https://img.shields.io/badge/Arquitectura-InceptionResNetV2-blue) ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.10-green) ![Accuracy](https://img.shields.io/badge/Val%20Accuracy-99.83%25-success)
 
 Proyecto de aprendizaje profundo para clasificar capturas de pantalla de **6 videojuegos populares** (extensible a 21). Se compara un modelo CNN básico con una versión mejorada que incorpora **Transfer Learning**, **Fine‑Tuning** y una capa **LSTM**, siguiendo las metodologías de los artículos *Lubinus et al. (2021)* [1] y *COVID‑DSNet* [2].
 
@@ -133,21 +133,21 @@ CNN secuencial simple implementada en TensorFlow/Keras.
 
 | Época | Train Loss | Train Acc | Val Loss | Val Acc |
 |------|-----------|-----------|----------|----------|
-| 1 | 2.0258 | 0.4972 | 0.8217 | 0.6995 |
-| 2 | 1.0913 | 0.6468 | 0.9826 | 0.6868 |
-| 3 | 0.8835 | 0.7152 | 0.6970 | 0.7591 |
-| 4 | 0.7131 | 0.7739 | 0.5673 | 0.8394 |
-| 5 | 0.6048 | 0.8092 | 0.4273 | 0.8621 |
-| 6 | 0.5188 | 0.8366 | 0.3608 | 0.8813 |
-| 7 | 0.4703 | 0.8497 | 0.3474 | 0.8824 |
-| 8 | 0.4298 | 0.8605 | 0.3010 | 0.9102 |
-| 9 | 0.3922 | 0.8766 | 0.3017 | 0.9028 |
-| 10 | 0.3657 | 0.8820 | 0.2990 | 0.9022 |
+| 1 | 2.0217 | 0.4307 | 1.1849 | 0.6544 |
+| 2 | 1.5905 | 0.5494 | 0.8639 | 0.7072 |
+| 3 | 1.2926 | 0.6195 | 1.0480 | 0.6797 |
+| 4 | 1.0926 | 0.6766 | 0.7464 | 0.7623 |
+| 5 | 0.9104 | 0.7253 | 0.5806 | 0.8182 |
+| 6 | 0.7871 | 0.7616 | 0.7097 | 0.7691 |
+| 7 | 0.6812 | 0.7914 | 0.4459 | 0.8483 |
+| 8 | 0.6104 | 0.8093 | 0.4065 | 0.8689 |
+| 9 | 0.5543 | 0.8244 | 0.3307 | 0.8996 |
+| 10 | 0.4986 | 0.8402 | 0.3042 | 0.9022 |
 
 ### Resultados Clave
 
-- **Train Accuracy máx:** 88.20%
-- **Validation Accuracy máx:** 91.02% 
+- **Train Accuracy máx:** 84.02%
+- **Validation Accuracy máx:** 90.22% 
 
 El modelo mejora consistentemente sin sobreajuste severo, pero con capacidad limitada.
 
@@ -276,7 +276,7 @@ El alto número de parámetros (~227M) no se traduce en rendimiento debido a ine
 
 | Modelo | Train Acc | Val Acc | Test Acc | Precision | Recall | Observaciones |
 |--------|----------|--------|----------|----------|--------|--------------|
-| V1 | 88.20% | 91.02% | 91.02% | 91.02% | 91.02% | Capacidad limitada |
+| V1 | 84.02% | 90.02% | 91.02% | 91.04% | 91.02% | Capacidad limitada |
 | V3 | 99.91% | 99.83% | 99.83% | 99.86% | 99.83% | Arquitectura híbrida |
 
 **Mejora:** +8.81 puntos porcentuales
@@ -304,7 +304,6 @@ videogame-classifier-cnn/
 │   ├── train/
 │   ├── validation/
 │   └── test/
-├── scripts/
 ├── inception_med_classifier_final/
 ├── README.md
 └── requirements.txt
